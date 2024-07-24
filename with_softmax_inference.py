@@ -42,7 +42,7 @@ class SSD_Detector:
                             self.clip(h, 1.0)
                         ])
 
-        # print(f"HandDetector GenerateAnchors finished, num of anchors: {len(self.priors)}!")
+        print(f"HandDetector GenerateAnchors finished, num of anchors: {len(self.priors)}!")
         return len(self.priors)
 
     def generate_bbox(self, bbox_collection, scores, boxes, score_threshold, num_anchors):
@@ -62,9 +62,9 @@ class SSD_Detector:
                 y2 = self.clip(y_center + h / 2.0, 1.0)
                 best_bbox = [x1, y1, x2, y2, max_score]
 
-        # if best_bbox is not None:
-        #     bbox_collection.append(best_bbox)
-        #     print(f"Generated bbox: x1={best_bbox[0]}, y1={best_bbox[1]}, x2={best_bbox[2]}, y2={best_bbox[3]}, score={best_bbox[4]}")
+        if best_bbox is not None:
+            bbox_collection.append(best_bbox)
+            print(f"Generated bbox: x1={best_bbox[0]}, y1={best_bbox[1]}, x2={best_bbox[2]}, y2={best_bbox[3]}, score={best_bbox[4]}")
 
     def resize_image(self, src_img):
         src_h, src_w, c = src_img.shape
@@ -83,7 +83,7 @@ class SSD_Detector:
     
     def preprocess(self, src_img):
         input_net_img = self.resize_image(src_img)
-        cv2.imwrite("./pre.jpg", input_net_img)
+        cv2.imwrite("./imgs/pre.jpg", input_net_img)
         input_net_img = input_net_img.transpose(2, 0, 1)  # 将图像的轴顺序从 (height, width, channels) 转换为 (channels, height, width)
 
         flattened_rgb_data = input_net_img.copy().flatten()
@@ -102,8 +102,8 @@ class SSD_Detector:
         input_name         = self.sess.get_inputs()[0].name
         confidences, boxes = self.sess.run(None, {input_name: input_net_img})
         print(confidences)
-        # print(f"confidences shape: {confidences.shape}")
-        # print(f"boxes shape: {boxes.shape}")
+        print(f"confidences shape: {confidences.shape}")
+        print(f"boxes shape: {boxes.shape}")
         return confidences[0], boxes[0]
 
     def postprocess(self, confidences, boxes, conf):
@@ -130,23 +130,24 @@ class SSD_Detector:
             print(f"x1:{x1}, y1:{y1}, x2:{x2}, y2:{y2}, conf:{bbox[4]}")
             cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), red_color, 2)
             
-        cv2.imwrite("./result_one_hand_quant_per_channel.jpg", img)
+        cv2.imwrite("./imgs/result_one_hand_quant_per_channel.jpg", img)
 
 if __name__ == "__main__":
 
     input_height       = 144
     input_width        = 192
     box_conf           = 0.9
-    input_img_path     = "../imgs/21_1692932849057.jpg"
-    onnx_path          = "/mnt/sdc/DataSSD/Depth/zs_space/works_space/tutorials/notebooks/models/2_fox_complex_144_light_RGB_noprepro_QDQ_quant.onnx"
+    # input_img_path     = "../imgs/21_1692932849057.jpg"
+    input_img_path     = "/mnt/sda/DataSATA/UserData/zengsheng/my_workspace/dl_works/to_st_wendy/21_1692932849057.jpg"
+    onnx_path          = "/mnt/sda/DataSATA/UserData/zengsheng/my_workspace/dl_works/to_st_wendy/2_fox_complex_144_light_RGB_noprepro_QDQ_quant.onnx"
 
     detector           = SSD_Detector(onnx_path, input_height, input_width)
     src_img            = cv2.imread(input_img_path)
     confidences, boxes = detector.inference(src_img)
     bboxes_result      = detector.postprocess(confidences, boxes, box_conf)
 
-    # print(len(bboxes_result))
-    # print(bboxes_result)
+    print(len(bboxes_result))
+    print(bboxes_result)
     detector.draw_result(src_img, bboxes_result)
       
 
