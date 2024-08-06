@@ -15,8 +15,11 @@ int8_file_path    = './boxes_st.bin'
 # float32_file_path = './confidences.bin'
 # int8_file_path    = './confidences_st.bin'
 
-# 假设文件大小为384x2
+# 假设文件大小为384x4
 shape = (384, 4)
+
+# # 假设文件大小为384x2
+# shape = (384, 2)
 
 float32_data = load_bin_file(float32_file_path, dtype=np.float32, shape=shape)
 int8_data    = load_bin_file(int8_file_path, dtype=np.int8, shape=shape).astype(np.float32)
